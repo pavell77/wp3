@@ -1,0 +1,50 @@
+
+services:  
+  mysql:  
+    image: mariadb  
+    volumes:  
+      - ./data/mysql:/var/lib/mysql  
+    environment:  
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}  
+      MYSQL_DATABASE: ${DB_NAME}  
+      MYSQL_USER: ${DB_USER}  
+      MYSQL_PASSWORD: ${DB_PASSWORD}  
+    restart: always  
+
+  wordpress:  
+    image: wordpress:latest  
+    ports:  
+      - "8000:80"  
+    volumes:  
+      - ./wordpress:/var/www/html   
+    depends_on:  
+      - mysql  
+    environment:  
+      WORDPRESS_DB_HOST: mysql  
+      WORDPRESS_DB_NAME: ${DB_NAME}  
+      WORDPRESS_DB_USER: ${DB_USER}   
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}  
+      WORDPRESS_TABLE_PREFIX: wp_  
+    restart: always  
+
+  phpmyadmin:  
+    image: phpmyadmin/phpmyadmin  
+    restart: always  
+    ports:  
+      - '8181:80'  
+    environment:  
+      PMA_HOST: mysql  
+      PMA_USER: ${DB_USER}  
+      PMA_PASSWORD: ${DB_PASSWORD}   
+    depends_on:  
+      - mysql  
+
+  nginx:  
+    image: nginx:alpine  
+    volumes:  
+      - ./nginx:/etc/nginx/conf.d  
+      - ./data/html:/var/www/html  
+    ports:  
+      - 8080:80  
+    depends_on:  
+      - wordpress
